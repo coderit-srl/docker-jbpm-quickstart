@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: jbpm-postgres
+    environment:
+      POSTGRES_DB: jbpm
+      POSTGRES_USER: jbpm
+      POSTGRES_PASSWORD: jbpm
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - jbpm-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U jbpm" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jbpm:
+    image: quay.io/kiegroup/jbpm-server-full:latest
+    container_name: jbpm-server
+    platform: linux/amd64
+    volumes:
+      - ./scripts/setup-wildfly.sh:/opt/jboss/wildfly/bin/setup-wildfly.sh:ro
+      - ./scripts/setup.cli:/opt/jboss/wildfly/bin/setup.cli:ro
+      - ./scripts/start_jbpm-wb.sh:/opt/jboss/wildfly/bin/start_jbpm-wb.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      EXTRA_OPTS: "-bmanagement 0.0.0.0"
+      JBPM_DB_DRIVER: postgres
+      JBPM_DB_HOST: postgres
+      JBPM_DB_PORT: 5432
+      JBPM_DB_NAME: jbpm
+      JBPM_DB_USER: jbpm
+      JBPM_DB_PASSWORD: jbpm
+
+      # KIE Server configuration
+      KIE_SERVER_ID: jbpm-server
+
+      # Remote access configuration
+      JBPM_SERVER_HOST: 0.0.0.0
+
+      # Java opts
+      JAVA_OPTS: -Xms1024m -Xmx2048m -Djava.net.preferIPv4Stack=true
+    ports:
+      - "9990:9990"
+      - "8080:8080"
+      - "8001:8001"  # Debug port (optional)
+    networks:
+      - jbpm-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/kie-server/services/rest/server" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+volumes:
+  postgres_data:
+    driver: local
+  jbpm_data:
+    driver: local
+  jbpm_deployments:
+    driver: local
+
+networks:
+  jbpm-network:
+    driver: bridge

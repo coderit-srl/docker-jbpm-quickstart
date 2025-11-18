@@ -1,0 +1,19 @@
+data/
+# Environment variables
+.env
+
+# Docker volumes
+postgres_data/
+jbpm_data/
+jbpm_deployments/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+data/
