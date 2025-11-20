@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./postgres-config/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - jbpm-network
     healthcheck:
@@ -19,16 +19,63 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    build:
+      context: .
+      dockerfile: keycloak.Dockerfile
+    container_name: jbpm-keycloak
+    platform: linux/amd64
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: true
+      KC_HTTP_PORT: 9080
+      KC_HTTPS_PORT: 9443
+      KEYCLOAK_IMPORT: "/opt/keycloak-export"
+      # Enable on K8s if using reverse proxy
+      #   KC_PROXY: edge
+    volumes:
+      - ./keycloak-config/realms-export:/opt/keycloak/data/import:Z
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+    networks:
+      jbpm-network:
+        aliases:
+          - keycloak
+          - keycloak.internal
+    command: start --import-realm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9080/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   jbpm:
-    image: quay.io/kiegroup/jbpm-server-full:latest
+    image: coderitsrl/jbpm-server
+    build:
+      context: .
     container_name: jbpm-server
     platform: linux/amd64
     volumes:
-      - ./scripts/setup-wildfly.sh:/opt/jboss/wildfly/bin/setup-wildfly.sh:ro
-      - ./scripts/setup.cli:/opt/jboss/wildfly/bin/setup.cli:ro
-      - ./scripts/start_jbpm-wb.sh:/opt/jboss/wildfly/bin/start_jbpm-wb.sh:ro
+      - ./data/wb_git:/opt/jboss/wildfly/bin/.niogit:Z
+      - ./data/jbpm_m2_repository:/opt/jboss/.m2/repository:Z
+      - ./data/jbpm_data:/opt/jboss/wildfly/standalone/data:Z
+      - ./jbpm-config/kie-git.json:/opt/jboss/kie-git.json:ro
+      - ./keycloak-config/keycloak.keystore:/opt/jboss/keycloak.keystore:ro
     depends_on:
       postgres:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
     environment:
       # Database configuration
@@ -46,12 +93,16 @@ services:
       # Remote access configuration
       JBPM_SERVER_HOST: 0.0.0.0
 
+      # Make sure it matches everything in the keycloak config or JWT tokens won't be valid
+      KEYCLOAK_URL: https://keycloak.internal:9443
+
       # Java opts
-      JAVA_OPTS: -Xms1024m -Xmx2048m -Djava.net.preferIPv4Stack=true
+      # Trust store is needed since we are using a self-signed certificate for keycloak
+      JAVA_OPTS: -Xms1024m -Xmx2048m -Dorg.uberfire.nio.git.ssh.host=0.0.0.0 -Dorg.uberfire.nio.git.ssh.port=8001 -Djavax.net.ssl.trustStore=/opt/jboss/keycloak.keystore -Djavax.net.ssl.trustStorePassword=password
     ports:
       - "9990:9990"
       - "8080:8080"
-      - "8001:8001"  # Debug port (optional)
+      - "127.0.0.1:8001:8001"  # Debug port (optional)
     networks:
       - jbpm-network
     healthcheck:
@@ -63,10 +114,6 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
-  jbpm_data:
-    driver: local
-  jbpm_deployments:
     driver: local
 
 networks:

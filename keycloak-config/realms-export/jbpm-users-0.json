@@ -1,0 +1,64 @@
+{
+  "realm" : "jbpm",
+  "users" : [ {
+    "id" : "1b0fcb71-c1d9-4789-90fe-2d81d1654523",
+    "createdTimestamp" : 1763658739837,
+    "username" : "gio",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "3a6f5ec4-a960-495a-955d-9adc440518b9",
+      "type" : "password",
+      "createdDate" : 1763658746067,
+      "secretData" : "{\"value\":\"NgthJ2S2I9BJRxR5B6YoNdivrraEwgEhENfaLgyxXYBAcK+YewpMMN7jdhkHR1woRcBGQ/f5Vo00BRBx7+7Lfw==\",\"salt\":\"LtK4dGGDGPf5q7BmO1XnJA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "admin", "kiemgmt", "rest-all", "default-roles-jbpm", "kie-server" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "1ac2e77d-e899-48fe-89d1-e0ae81382c9d",
+    "createdTimestamp" : 1763668624986,
+    "username" : "kieserver",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "5d950362-589a-4d44-8a31-4fb398921e4e",
+      "type" : "password",
+      "createdDate" : 1763668630180,
+      "secretData" : "{\"value\":\"BYZviZ5icZ9mgdmRkSc2zwp0/k/hoVqNxCJp14jk0n7plO0+09OnFTMkJHG9aTQr0XxoSgy4WsNvwM850/q3dQ==\",\"salt\":\"fGrHPVtaaToxAqzcKxTLhA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "admin", "kiemgmt", "rest-all", "default-roles-jbpm", "kie-server" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "1ebc5f18-79d8-4ce2-9441-1504912a1081",
+    "createdTimestamp" : 1763657666542,
+    "username" : "wbadmin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "id" : "8972e7fb-5024-4ec2-b427-8f4d6a1f4ae3",
+      "type" : "password",
+      "createdDate" : 1763657680983,
+      "secretData" : "{\"value\":\"Pq7tBGaPq0szxOQn9eWyN+wdiUuWGmQC/i7oFLz5Nc8L4GEVn83FChjU8pYEdPFd/Li0lLwJ/UEwmmt4pN/yAw==\",\"salt\":\"O7onNVhPo46FuxpcglpXoA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "admin", "kiemgmt", "rest-all", "default-roles-jbpm", "kie-server" ],
+    "clientRoles" : {
+      "realm-management" : [ "realm-admin" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

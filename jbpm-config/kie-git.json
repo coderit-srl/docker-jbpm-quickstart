@@ -1,0 +1,10 @@
+{
+  "realm": "jbpm",
+  "auth-server-url": "https://keycloak.internal:9443",
+  "ssl-required": "none",
+  "resource": "kie-git",
+  "credentials": {
+    "secret": "bdSY36oxrx48jusQjCDgL7JnpRrdRrYG"
+  },
+  "confidential-port": 0
+}

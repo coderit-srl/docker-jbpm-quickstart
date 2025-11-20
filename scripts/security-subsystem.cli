@@ -1,0 +1,25 @@
+# Add security subsystem
+/subsystem=security:add
+
+# Add security domain: other
+/subsystem=security/security-domain=other:add(cache-type=default)
+/subsystem=security/security-domain=other/authentication=classic:add()
+/subsystem=security/security-domain=other/authentication=classic/login-module=Remoting:add(code=Remoting, flag=optional, module-options=[("password-stacking"=>"useFirstPass")])
+/subsystem=security/security-domain=other/authentication=classic/login-module=RealmDirect:add(code=RealmDirect, flag=required, module-options=[("password-stacking"=>"useFirstPass")])
+
+# Add security domain: jboss-web-policy
+/subsystem=security/security-domain=jboss-web-policy:add(cache-type=default)
+/subsystem=security/security-domain=jboss-web-policy/authorization=classic:add()
+/subsystem=security/security-domain=jboss-web-policy/authorization=classic/policy-module=Delegating:add(code=Delegating, flag=required)
+
+# Add security domain: jaspitest
+/subsystem=security/security-domain=jaspitest:add(cache-type=default)
+/subsystem=security/security-domain=jaspitest/authentication=jaspi:add()
+/subsystem=security/security-domain=jaspitest/authentication=jaspi/login-module-stack=dummy:add()
+/subsystem=security/security-domain=jaspitest/authentication=jaspi/login-module-stack=dummy/login-module=Dummy:add(code=Dummy, flag=optional)
+/subsystem=security/security-domain=jaspitest/authentication=jaspi/auth-module=Dummy:add(code=Dummy)
+
+# Add security domain: jboss-ejb-policy
+/subsystem=security/security-domain=jboss-ejb-policy:add(cache-type=default)
+/subsystem=security/security-domain=jboss-ejb-policy/authorization=classic:add()
+/subsystem=security/security-domain=jboss-ejb-policy/authorization=classic/policy-module=Delegating:add(code=Delegating, flag=required)
