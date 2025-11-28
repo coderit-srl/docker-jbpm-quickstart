@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jbpm
+  namespace: jbpm
+  labels:
+    app.kubernetes.io/name: jbpm
+    app.kubernetes.io/part-of: jbpm-stack
+spec:
+  serviceName: jbpm
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jbpm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jbpm
+        app.kubernetes.io/part-of: jbpm-stack
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres 5432; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+        - name: wait-for-keycloak
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z keycloak 9080; do
+                echo "Waiting for Keycloak..."
+                sleep 5
+              done
+              echo "Keycloak is ready"
+      containers:
+        - name: jbpm
+          image: coderitsrl/jbpm-server:latest
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9990
+              name: management
+            - containerPort: 8001
+              name: git-ssh
+          envFrom:
+            - configMapRef:
+                name: jbpm-config
+            - secretRef:
+                name: jbpm-secret
+          volumeMounts:
+            - name: wb-git
+              mountPath: /opt/jboss/wildfly/bin/.niogit
+            - name: jbpm-m2-repository
+              mountPath: /opt/jboss/.m2/repository
+            - name: jbpm-data
+              mountPath: /opt/jboss/wildfly/standalone/data
+            - name: kie-git-config
+              mountPath: /opt/jboss/kie-git.json
+              subPath: kie-git.json
+              readOnly: true
+            - name: cli-scripts
+              mountPath: /opt/jboss/wildfly/bin/custom.cli
+              subPath: custom.cli
+              readOnly: true
+            - name: cli-scripts
+              mountPath: /opt/jboss/wildfly/bin/jbpm-keycloak-setup.cli
+              subPath: jbpm-keycloak-setup.cli
+              readOnly: true
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          readinessProbe:
+            httpGet:
+              path: /kie-server/services/rest/server
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /kie-server/services/rest/server
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+      volumes:
+        - name: kie-git-config
+          configMap:
+            name: jbpm-kie-git
+        - name: cli-scripts
+          secret:
+            secretName: jbpm-cli-scripts
+  volumeClaimTemplates:
+    - metadata:
+        name: wb-git
+        labels:
+          app.kubernetes.io/name: jbpm
+          app.kubernetes.io/part-of: jbpm-stack
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+    - metadata:
+        name: jbpm-m2-repository
+        labels:
+          app.kubernetes.io/name: jbpm
+          app.kubernetes.io/part-of: jbpm-stack
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+    - metadata:
+        name: jbpm-data
+        labels:
+          app.kubernetes.io/name: jbpm
+          app.kubernetes.io/part-of: jbpm-stack
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi

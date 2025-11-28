@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jbpm-ingress
+  namespace: jbpm
+  labels:
+    app.kubernetes.io/name: jbpm
+    app.kubernetes.io/part-of: jbpm-stack
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - jbpm.example.com
+      secretName: jbpm-tls
+    - hosts:
+        - keycloak.example.com
+      secretName: keycloak-tls
+  rules:
+    - host: jbpm.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jbpm
+                port:
+                  number: 8080
+    - host: keycloak.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 9080

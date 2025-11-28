@@ -1,0 +1,10 @@
+{
+  "realm": "jbpm",
+  "auth-server-url": "https://iam.example.com",
+  "ssl-required": "external",
+  "resource": "kie-git",
+  "credentials": {
+    "secret": "REPLACE_ME"
+  },
+  "confidential-port": 0
+}

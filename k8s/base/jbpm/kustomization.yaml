@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - jbpm-configmap.yaml
+  - jbpm-secret.yaml
+  - jbpm-statefulset.yaml
+  - jbpm-service.yaml
+
+images:
+  - name: coderitsrl/jbpm-server
+    newTag: latest

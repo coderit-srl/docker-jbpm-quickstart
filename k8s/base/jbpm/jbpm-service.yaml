@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jbpm
+  namespace: jbpm
+  labels:
+    app.kubernetes.io/name: jbpm
+    app.kubernetes.io/part-of: jbpm-stack
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+    - port: 9990
+      targetPort: 9990
+      name: management
+    - port: 8001
+      targetPort: 8001
+      name: git-ssh
+  selector:
+    app.kubernetes.io/name: jbpm

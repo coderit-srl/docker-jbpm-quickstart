@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jbpm
+  labels:
+    app.kubernetes.io/name: jbpm
+    app.kubernetes.io/part-of: jbpm-stack

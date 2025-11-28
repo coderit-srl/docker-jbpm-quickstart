@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jbpm-config
+  namespace: jbpm
+  labels:
+    app.kubernetes.io/name: jbpm
+    app.kubernetes.io/part-of: jbpm-stack
+data:
+  EXTRA_OPTS: "-bmanagement 0.0.0.0"
+  JBPM_DB_DRIVER: postgres
+  JBPM_DB_HOST: postgres
+  JBPM_DB_PORT: "5432"
+  JBPM_DB_NAME: jbpm
+  KIE_SERVER_ID: jbpm-server
+  JBPM_SERVER_HOST: "0.0.0.0"
+  # Public Keycloak URL - override in overlay for different environments
+  KEYCLOAK_URL: "https://keycloak.example.com"
+  # Java options
+  JAVA_OPTS: "-Xms1024m -Xmx2048m -Dorg.uberfire.nio.git.ssh.host=0.0.0.0 -Dorg.uberfire.nio.git.ssh.port=8001"

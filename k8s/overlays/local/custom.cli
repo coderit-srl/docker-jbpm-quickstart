@@ -1,0 +1,8 @@
+embed-server --server-config=standalone.xml
+
+jms-queue add --queue-address=foo --entries=["java:/jms/queue/foo", "queue/foo"]
+jms-queue add --queue-address=KIE.SERVER.SIGNAL --entries=["java:/jms/queue/KIE.SERVER.SIGNAL", "queue/KIE.SERVER.SIGNAL"]
+
+/subsystem=messaging-activemq/server=default/queue=PROCESS_MESSAGES.Q:add(durable=true,queue-address=PROCESS_MESSAGES.Q)
+
+stop-embedded-server

@@ -1,0 +1,26 @@
+embed-server --server-config=standalone.xml
+
+# Fix broken wildfly adapter script
+/subsystem=undertow/application-security-domain=other:remove()
+/subsystem=undertow/application-security-domain=other:add(http-authentication-factory=keycloak-http-authentication)
+/subsystem=ejb3/application-security-domain=other:write-attribute(name=security-domain, value=KeycloakDomain)
+
+# Secure Business Central with Keycloak
+# REPLACE: auth-server-url, realm-public-key, credential secret
+/subsystem=keycloak/secure-deployment=business-central.war:add(auth-server-url=https://iam.example.com,disable-trust-manager=true,enable-basic-auth=true,principal-attribute=preferred_username,realm=jbpm,realm-public-key=REPLACE_WITH_REALM_PUBLIC_KEY,resource=kie,ssl-required=NONE)
+/subsystem=keycloak/secure-deployment=business-central.war/credential=secret:add(value=REPLACE_WITH_KIE_CLIENT_SECRET)
+
+# Secure Business Central Case Management with Keycloak
+/subsystem=keycloak/secure-deployment=jbpm-casemgmt.war:add(auth-server-url=https://iam.example.com,disable-trust-manager=true,enable-basic-auth=true,principal-attribute=preferred_username,realm=jbpm,realm-public-key=REPLACE_WITH_REALM_PUBLIC_KEY,resource=kie,ssl-required=NONE)
+/subsystem=keycloak/secure-deployment=jbpm-casemgmt.war/credential=secret:add(value=REPLACE_WITH_KIE_CLIENT_SECRET)
+
+# Allow basic auth via Keycloak Direct Access Grant
+/subsystem=security/security-domain=other/authentication=classic/login-module=Remoting:remove
+/subsystem=security/security-domain=other/authentication=classic/login-module=RealmDirect:remove
+/subsystem=security/security-domain=other/authentication=classic/login-module=org.keycloak.adapters.jaas.DirectAccessGrantsLoginModule:add(code=org.keycloak.adapters.jaas.DirectAccessGrantsLoginModule, flag=required, module-options={keycloak-config-file=/opt/jboss/kie-git.json})
+
+# Secure KIE Server with Keycloak
+/subsystem=keycloak/secure-deployment=kie-server.war:add(auth-server-url=https://iam.example.com,disable-trust-manager=true,enable-basic-auth=true,principal-attribute=preferred_username,realm=jbpm,realm-public-key=REPLACE_WITH_REALM_PUBLIC_KEY,resource=kie-execution-server,ssl-required=NONE)
+/subsystem=keycloak/secure-deployment=kie-server.war/credential=secret:add(value=REPLACE_WITH_KIE_EXECUTION_SERVER_SECRET)
+
+stop-embedded-server

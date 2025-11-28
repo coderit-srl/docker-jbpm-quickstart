@@ -1,0 +1,73 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: jbpm
+
+resources:
+  - ../../base/postgres
+  - ../../base/jbpm
+  - ingress.yaml
+  - namespace.yaml
+
+# Generate environment-specific ConfigMaps
+configMapGenerator:
+  - name: jbpm-kie-git
+    files:
+      - kie-git.json
+
+# Generate environment-specific Secrets
+secretGenerator:
+  - name: jbpm-cli-scripts
+    files:
+      - custom.cli
+      - jbpm-keycloak-setup.cli
+
+patches:
+  # Replace postgres init script without Keycloak database
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: postgres-init-db
+      data:
+        init-db.sql: |
+          -- Initialize jBPM database (without Keycloak)
+          -- This file is executed automatically when the PostgreSQL container starts
+
+          -- The database 'jbpm' is already created by the POSTGRES_DB environment variable
+
+          -- Grant all privileges to jbpm user (already done by default, but explicit)
+          GRANT ALL PRIVILEGES ON DATABASE jbpm TO jbpm;
+
+          -- Set default schema permissions
+          \c jbpm;
+          GRANT ALL ON SCHEMA public TO jbpm;
+    target:
+      kind: ConfigMap
+      name: postgres-init-db
+
+  # Configure jBPM for external Keycloak
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: jbpm-config
+      data:
+        KEYCLOAK_URL: "https://iam.example.com"
+    target:
+      kind: ConfigMap
+      name: jbpm-config
+
+  # Remove wait-for-keycloak init container (external Keycloak)
+  - patch: |-
+      - op: remove
+        path: /spec/template/spec/initContainers/1
+    target:
+      kind: StatefulSet
+      name: jbpm
+
+# Common labels
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/part-of: jbpm-stack
