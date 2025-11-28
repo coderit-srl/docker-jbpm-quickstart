@@ -4,6 +4,17 @@
 echo "Update database connection setup"
 ./update_db_config.sh
 
+echo "Overlaying business-central.war web.xml"
+OVERLAY_DIR="${OVERLAY_DIR:-/opt/jbpm-config/bc-overlay}"
+BC_WAR_FILE="$JBOSS_HOME/standalone/deployments/business-central.war"
+if [ -d "$OVERLAY_DIR" ] && [ -f "$BC_WAR_FILE" ]; then
+    cd "$OVERLAY_DIR"
+    jar -uf "$BC_WAR_FILE" WEB-INF/web.xml
+    cd -
+else
+    echo "Warning: Overlay directory ($OVERLAY_DIR) or business-central.war ($BC_WAR_FILE) not found, skipping overlay"
+fi
+
 echo "Running standard customization script"
 ./setup-wildfly.sh
 

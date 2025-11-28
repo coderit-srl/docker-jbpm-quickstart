@@ -2,6 +2,7 @@ FROM quay.io/kiegroup/jbpm-server-full:latest
 
 # Copy custom configuration scripts
 COPY --chown=jboss:jboss scripts/* /opt/jboss/wildfly/bin/
+COPY --chown=jboss:jboss jbpm-config/bc-overlay/ /opt/jbpm-config/bc-overlay/
 
 # Make scripts executable
 RUN chmod +x /opt/jboss/wildfly/bin/*.sh
