@@ -1,0 +1,19 @@
+embed-server --server-config=standalone.xml
+
+try
+        module add --name=org.postgres --resources=drivers/postgresql.jar --dependencies=javax.api,javax.transaction.api
+catch
+        echo "PostgreSQL module exists"
+end-try
+
+if (outcome != success) of /subsystem=datasources/jdbc-driver=postgres:read-resource
+        /subsystem=datasources/jdbc-driver=postgres:add(driver-name=postgres,driver-module-name=org.postgres,driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)
+end-if
+
+if (outcome == success) of /subsystem=datasources/data-source=quartzDS:read-resource
+        /subsystem=datasources/data-source=quartzDS:remove
+end-if
+
+data-source add --name=quartzDS --jndi-name="java:jboss/datasources/quartzDS" --driver-name=postgres --user-name=jbpm --password=jbpm --datasource-class=org.postgresql.jdbc3.Jdbc3PoolingDataSource --connection-properties=[ServerName=localhost, PortNumber=5432, DatabaseName=jbpm] --background-validation=true --background-validation-millis=120000 --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker --validate-on-match=true
+
+stop-embedded-server

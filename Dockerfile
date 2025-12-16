@@ -4,6 +4,9 @@ FROM quay.io/kiegroup/jbpm-server-full:latest
 COPY --chown=jboss:jboss scripts/* /opt/jboss/wildfly/bin/
 COPY --chown=jboss:jboss jbpm-config/bc-overlay/ /opt/jbpm-config/bc-overlay/
 
+# Copy quartz config file
+COPY --chown=jboss:jboss quartz-config/quartz-definition.properties /opt/jboss/wildfly/standalone/configuration/
+
 # Make scripts executable
 RUN chmod +x /opt/jboss/wildfly/bin/*.sh
 
