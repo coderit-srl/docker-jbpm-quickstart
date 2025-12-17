@@ -2,9 +2,6 @@ embed-server --server-config=standalone.xml
 
 run-batch --file=security-subsystem.cli --verbose
 
-/subsystem=microprofile-opentracing-smallrye:remove()
-/extension=org.wildfly.extension.microprofile.opentracing-smallrye:remove()
-
 /subsystem=ejb3/service=timer-service/database-data-store=ejb_timer_ds:add(datasource-jndi-name="java:jboss/datasources/jBPMDS",database="jbpm",partition="ejb_timer_master_part",refresh-interval="30000")
 /subsystem=ejb3/service=timer-service:write-attribute(name="default-data-store", value="ejb_timer_ds")
 

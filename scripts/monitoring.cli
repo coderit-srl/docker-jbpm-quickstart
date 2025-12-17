@@ -1,0 +1,26 @@
+embed-server --server-config=standalone.xml
+
+# Enable wildfly prometheus metrics, accessible at http://localhost:9990/metrics
+# Auth is disabled
+if (outcome != success) of /subsystem=metrics:read-resource
+        /subsystem=metrics:add(security-enabled=false)
+end-if
+
+# Enable kie-server prometheus metrics, accessible at http://localhost:8080/kie-server/services/rest/metrics
+# Uses basic auth
+if (outcome != success) of /system-property=org.kie.prometheus.server.ext.disabled:read-resource
+    /system-property=org.kie.prometheus.server.ext.disabled:add(value=false)
+else
+    /system-property=org.kie.prometheus.server.ext.disabled:write-attribute(name=value, value=false)
+end-if
+
+# Disable opentracing
+if (outcome != success) of /subsystem=microprofile-opentracing-smallrye:remove()
+    echo "microprofile-opentracing-smallrye already disabled"
+end-if
+
+if (outcome != success) of /extension=org.wildfly.extension.microprofile.opentracing-smallrye:remove()
+    echo "wildfly extension microprofile-opentracing-smallrye already disabled"
+end-if
+
+stop-embedded-server

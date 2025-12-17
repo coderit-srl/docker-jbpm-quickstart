@@ -16,7 +16,7 @@ else
 fi
 
 echo "Running standard customization script"
-./setup-wildfly.sh
+CLI_FILE="setup.cli" ./setup-wildfly.sh
 
 echo "Configuring Quartz DS"
 ./setup-quartz-ds.sh
@@ -26,6 +26,9 @@ CLI_FILE="adapter-elytron-install-offline.cli" ./setup-wildfly.sh
 
 echo "Running JBPM keycloak adapter integration script"
 CLI_FILE="jbpm-keycloak-setup.cli" ./setup-wildfly.sh
+
+echo "Enabling monitoring"
+CLI_FILE="monitoring.cli" ./setup-wildfly.sh
 
 CUSTOM_CLI_FILE=${CUSTOM_CLI_FILE:-custom.cli}
 echo "Running custom init script"
